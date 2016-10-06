@@ -5,21 +5,30 @@
   var render = function(article) {
     var template = Handlebars.compile($('#article-template').text());
 
-    article.daysAgo = parseInt((new Date() - new Date(article.publishedOn))/60/60/24/1000);
-    article.publishStatus = article.publishedOn ? 'published ' + article.daysAgo + ' days ago' : '(draft)';
+    article.daysAgo = parseInt((new Date() -
+      new Date(article.publishedOn))/60/60/24/1000);
+    article.publishStatus = article.publishedOn ? 'published '
+      + article.daysAgo + ' days ago' : '(draft)';
     article.body = marked(article.body);
 
     return template(article);
   };
 
   // COMMENT: What does this method do?  What is it's execution path?
+  // This method populates all the select options in the filter dropdown using
+  // the option template that is passed to Handlebars. To prevent duplicate
+  // options, there are if statements that check whether that given author/
+  // category already exists. It is being called within articleView.index
+  // after all articles have been populated.
   articleView.populateFilters = function() {
     var options,
       template = Handlebars.compile($('#option-template').text());
 
-    // Example of using model method with functional programming, synchronous approach:
-    // This method is dependant on info being in the DOM. Only authors of shown articles are loaded.
-    options = Article.allAuthors().map(function(author) { return template({val: author}); });
+    // Example of using model method with functional programming,
+    //synchronous approach: This method is dependant on info being in the DOM.
+    //Only authors of shown articles are loaded.
+    options = Article.allAuthors().map(function(author)
+      { return template({val: author}); });
     if ($('#author-filter option').length < 2) { // Prevent duplication
       $('#author-filter').append(options);
     };
@@ -38,10 +47,17 @@
   };
 
   // COMMENT: What does this method do?  What is it's execution path?
+  //This is attaching a event handler to the ul with id = filters, that only
+  //fires at most one time per event, and it's listening for a change event on
+  //the select child input. It is being called in articleView.index which is
+  //going to show articles for whatever has been selected. It's used in each of
+  //callbacks related to the articles page. Callbacks fire when state changes
+  //from the controller.
   articleView.handleFilters = function() {
     $('#filters').one('change', 'select', function() {
       var resource = this.id.replace('-filter', '');
-      page('/' + resource + '/' + $(this).val().replace(/\W+/g, '+')); // Replace any/all whitespace with a +
+      page('/' + resource + '/' + $(this).val().replace(/\W+/g, '+'));
+      // Replace any/all whitespace with a +
     });
   };
 
@@ -76,12 +92,16 @@
       hljs.highlightBlock(block);
     });
 
-    // Export the new article as JSON, so it's ready to copy/paste into blogArticles.js:
+    // Export the new article as JSON,
+    //so it's ready to copy/paste into blogArticles.js:
     $('#export-field').show();
     $('#article-json').val(JSON.stringify(article) + ',');
   };
 
   // COMMENT: What does this method do?  What is it's execution path?
+  // This is the final callback function that renders the articles onto the page
+  // called from the routes associated with the article data. The routes are
+  // are called from the controller.
   articleView.index = function(articles) {
     $('#articles').show().siblings().hide();
 
